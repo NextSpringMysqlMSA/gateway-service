@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import reactor.core.publisher.Mono;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter implements WebFilter {
@@ -27,7 +29,13 @@ public class JwtAuthenticationFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
 
-        if (path.startsWith("/auth/")) {
+        // ✅ 프리플라이트 요청은 무조건 통과
+        if (exchange.getRequest().getMethod().name().equalsIgnoreCase("OPTIONS")) {
+            return chain.filter(exchange);
+        }
+
+        // ✅ 인증 제외 경로
+        if (path.startsWith("/auth/") || path.startsWith("/images/")) {
             return chain.filter(exchange);
         }
 
@@ -35,8 +43,8 @@ public class JwtAuthenticationFilter implements WebFilter {
 
         if (token != null && validateToken(token)) {
             Long memberId = extractMemberId(token);
+            log.info("memberId: {}", memberId);
 
-            // 기존 요청을 복사하고, 새로운 헤더 추가
             ServerWebExchange mutatedExchange = exchange.mutate()
                     .request(builder -> builder.header("X-MEMBER-ID", String.valueOf(memberId)))
                     .build();
