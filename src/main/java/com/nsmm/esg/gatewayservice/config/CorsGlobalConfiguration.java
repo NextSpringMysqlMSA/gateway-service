@@ -15,7 +15,7 @@ public class CorsGlobalConfiguration {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of("http://localhost:3000"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:3000", "http://frontend:3000"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
