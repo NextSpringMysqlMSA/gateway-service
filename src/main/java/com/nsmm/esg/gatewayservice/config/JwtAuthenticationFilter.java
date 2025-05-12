@@ -29,12 +29,12 @@ public class JwtAuthenticationFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
 
-        // ✅ 프리플라이트 요청은 무조건 통과
+        // 프리플라이트 요청은 무조건 통과
         if (exchange.getRequest().getMethod().name().equalsIgnoreCase("OPTIONS")) {
             return chain.filter(exchange);
         }
 
-        // ✅ 인증 제외 경로
+        // 인증 제외 경로
         if (path.startsWith("/auth/") || path.startsWith("/images/")) {
             return chain.filter(exchange);
         }
