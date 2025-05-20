@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter implements WebFilter {
 
         // 인증이 필요 없는 특정 경로 패턴에 대한 처리
         // /auth/ 로 시작하는 경로(로그인, 회원가입 등) 및 /images/ 경로는 인증 없이 통과
-        if (path.startsWith("/auth/") || path.startsWith("/images/")) {
+        if (path.startsWith("/auth/") || path.startsWith("/images/") || path.startsWith("/actuator/")) {
             return chain.filter(exchange);
         }
 
