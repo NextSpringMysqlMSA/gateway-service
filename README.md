@@ -1,3 +1,6 @@
+## 🌲 Spring Security CORS & JWT 인증 필터 흐름도
+
+```mermaid
 flowchart TD
     %% 노드 정의
     start((Start))
