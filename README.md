@@ -1,7 +1,28 @@
-## 🌲 Spring Security CORS & JWT 인증 필터 흐름도 (Left to Right)
+
+# 🔐 Spring Security CORS & JWT 인증 필터 흐름도
+
+본 흐름은 Spring Security 환경에서 CORS 예비 요청 및 JWT 기반 인증을 처리하는 과정을 나타냅니다.  
+인증 로직은 JWT 유효성 검사 후 `X-MEMBER-ID`를 헤더에 주입하여 downstream 마이크로서비스에 전달됩니다.
+
+---
+
+## ✅ 처리 절차 요약
+
+| 단계 | 설명 |
+|------|------|
+| OPTIONS 요청 | CORS 예비 요청일 경우 필터 통과 |
+| 인증 제외 경로 | 로그인, 회원가입 등의 인증 제외 URL일 경우 필터 통과 |
+| JWT 추출 | `Authorization: Bearer {token}` 헤더에서 토큰 추출 |
+| 유효성 검사 | JWT의 서명, 만료 여부 검사 |
+| 인증 실패 | 토큰 누락/유효하지 않으면 `401 Unauthorized` 반환 |
+| 인증 성공 | 토큰에서 사용자 ID 추출 → `X-MEMBER-ID` 헤더에 삽입 → 다음 필터로 요청 전달
+
+---
+
+## 🔄 인증 필터 흐름도 (Top-Down)
 
 ```mermaid
-flowchart LR
+flowchart TD
     %% 노드 정의
     start((Start))
     methodCheck{OPTIONS 메서드인가?}
@@ -43,3 +64,30 @@ flowchart LR
     class start,methodCheck,pathCheck,hasToken,isValid,validateToken,extractToken,extractId,addHeader,forward forestGreen;
     class reject1,reject2 errorRed;
     class end1,end2,end3,end4,end5,skipAuth,bypassCORS terminal;
+````
+
+---
+
+## 🛠️ 기술 포인트
+
+* **CORS 예비 요청 OPTIONS**: 실제 요청 전 브라우저가 보내는 사전 요청이며, 인증 없이 통과시킴
+* **인증 제외 경로**: `/login`, `/signup` 등은 JWT 필터를 건너뜀
+* **JWT 검증**: 토큰이 유효한 경우에만 다음 필터로 전달
+* **`X-MEMBER-ID` 주입**: 마이크로서비스 간 사용자 식별을 위해 커스텀 헤더 삽입
+
+---
+
+## ✍️ 관련 코드 구조
+
+* `JwtAuthenticationFilter` (`OncePerRequestFilter`)
+* `JwtUtils` (토큰 파싱 및 서명 검증)
+* 예외 시 `HttpServletResponse.sendError(401 or 403)`
+
+---
+
+## 🔐 보안 확장 방안
+
+* 토큰 재발급 (Refresh Token) 흐름 추가
+* 토큰 서명 키를 Vault 또는 AWS Secrets Manager로 외부화
+* 요청 로그 및 토큰 추적 시스템 연동
+
